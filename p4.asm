@@ -1,4 +1,4 @@
-   ; ----------- macro para limpiar la pantalla 
+                                        ; ----------- macro para limpiar la pantalla 
 LIMPIAR_PANTALLA macro
 	mov ah,00h
 	mov al,03h
@@ -180,11 +180,10 @@ endm
 
 
 ; ========== macro para guardar numero dentro de un vector  
-GET_NUMBER_VECTOR macro vector,posicion,caracter   
+GET_NUMBER_VECTOR macro vector,posicion   
     and bx,0          ; borrador lo que tenga bx para usarlo
     mov bl,posicion
     mov si,bx         ; contador se mueve a si
-    mov bl,caracter   ; muevo el caracter
     mov bl,vector[si] ; obtiene el caracter del vector en posicion si y guarda en bl
 endm
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -
@@ -242,7 +241,7 @@ endm
     limpiar db 1 dup('$')
 
       
-    ;impresiones par mostara al usuario  
+    ;----------- impresiones par mostara al usuario  
     ruta_valida db 0
     contador db 0
     txt_ingrese_ruta    db 10,13,'Ingrese la ruta del archivo: ','$' 
@@ -252,10 +251,20 @@ endm
     contador_numeros_entrada db 0  
     
     
-    ; vector para guardar los numero de entrada por el archivo xml
+    ;---------- vector para guardar los numero de entrada por el archivo xml
     vector db 80 dup('$') 
     posicion_vector_numeros db 0
     tamanio_vector db 0
+    contador_recorrido db 0
+    msg_prueba db 'Hola mundo!!!',10,13,'$'
+
+
+    ;---------- utilidades para convertir el vector a un vector binario
+    posicion_vector_numeros2 db 0  
+    contador_numeros_push db 0      
+    aux_unidades db 0  
+    vector_binario db 80 dup('$') 
+    posicion_vector_binario dw 0
   
   
   
@@ -266,6 +275,7 @@ endm
     mov ax,@data
     mov ds,ax
 
+    ;***************** Inicio del menu principal
     menu:
         ;limpia la pantalla
         LIMPIAR_PANTALLA
@@ -467,22 +477,113 @@ endm
 
             ; agrego caracter de finalizacion al vector
             INSERT_VECTOR vector,posicion_vector_numeros,'$'
+            inc tamanio_vector
             PAUSA_PANTALLA
 
 
             ; === prueba impresion de elementos del vectos
             PRINT salto_linea
             PRINT vector            
-            PAUSA_PANTALLA
+            PAUSA_PANTALLA 
             
-            ;=================== regreso al menu 
-            jmp menu
+            
 
 
+        ; ==== conversion del vector a un vector con numeros completos y en binario
+        ; ==== para que la comparacion en los ordenamientos sea mas facil
+        ; asegurar que empiezen en 0
+        mov contador_numeros_push,0
+        mov posicion_vector_numeros2,0
+        vector_a_binario:                                    
+                                     
+            ; obtengo el primer caracter del vector
+            GET_NUMBER_VECTOR vector,posicion_vector_numeros2                
+              
+              
+            ;saber si el vector llego al final de la cadena
+            cmp bl,'$'
+            je menu             
+            
+            
+            ;saber si hay un cambio hacia otro numero
+            cmp bl,'-'
+            je unir_numeros
+                           
+                           
+            ;empujo a la pila
+            push bx   
+            inc contador_numeros_push
+            inc posicion_vector_numeros2
+            jmp vector_a_binario
 
        
-       
-       
+         ; ==== union de numeros para convertirlos en uno solo
+         unir_numeros:            
+         
+            ;--- dos unidades
+            cmp contador_numeros_push,2d
+            je dos_unidades           
+            
+            
+            ;---- una unidad
+            cmp contador_numeros_push,1d 
+            je una_unidad
+            
+            
+            
+         dos_unidades:
+            pop bx            
+            sub bl,30h            
+            mov al,1d            
+            mul bl              
+            
+            mov aux_unidades,al
+            
+           
+            pop bx            
+            sub bl,30h            
+            mov al,10d            
+            mul bl             
+            
+            add al,aux_unidades            
+                                     
+            mov si,posicion_vector_binario                         
+            mov vector_binario[si],al           
+            
+            
+            ;--- reinicio de variable
+            inc posicion_vector_binario 
+
+            mov contador_numeros_push,0
+             
+            inc posicion_vector_numeros2
+             
+            ; regreso al ciclo para ver el siguiente numero 
+            jmp vector_a_binario 
+
+
+        una_unidad:
+            pop bx
+            sub bl,30h
+            mov al,1d
+            mul bl 
+            mov aux_unidades,al
+            
+            mov si,posicion_vector_binario
+            mov vector_binario[si],al
+
+            ;--- reinicio de variable
+            inc posicion_vector_binario 
+
+            mov contador_numeros_push,0
+             
+            inc posicion_vector_numeros2
+            
+            ; regreso al ciclo para ver el siguiente numero 
+            jmp vector_a_binario 
+
+                
+            
        
        
        
