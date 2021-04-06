@@ -188,8 +188,23 @@ GET_NUMBER_VECTOR macro vector,posicion
 endm
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -
 
-  
-  
+
+
+; ========== obtener el numero binario del vector
+GET_NUMBER_BINARY macro vector,posicion,variable
+    and bx,0          ; borrador lo que tenga bx para usarlo
+    mov bl,posicion
+    mov si,bx         ; contador se mueve a si
+    mov bl,vector[si] ; obtiene el caracter del vector en posicion si y guarda en bl
+    mov variable,bl
+endm
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
+
+
+
+; ========== 
+
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
   
 
 
@@ -265,6 +280,16 @@ endm
     aux_unidades db 0  
     vector_binario db 80 dup('$') 
     posicion_vector_binario dw 0
+
+
+    ;---------- utilidades para convertir y imprimir un numero binario a decimal
+    numero_vector_binario db 0
+    cociente db 0
+    residuio db 0
+    total db 0
+    numero_binario dw 0
+
+
   
   
   
@@ -378,7 +403,7 @@ endm
             jz cerrar_archivo ; cierre del archivo 
             
               
-            ; caracter <
+            ; caracter < <>49<L>
             cmp fragmento,60
             je separador
                      
@@ -516,6 +541,7 @@ endm
             inc posicion_vector_numeros2
             jmp vector_a_binario
 
+
        
          ; ==== union de numeros para convertirlos en uno solo
          unir_numeros:            
@@ -562,6 +588,7 @@ endm
             jmp vector_a_binario 
 
 
+
         una_unidad:
             pop bx
             sub bl,30h
@@ -593,6 +620,27 @@ endm
     op_ordenar:
         PRINT txt_ordenar
         PAUSA_PANTALLA
+
+        PRINT salto_linea
+
+        mov cx,0
+        mov cl,posicion_vector_numeros2
+        mov total,cl
+
+
+
+        ;------- recorrido del vector en binario
+        ciclo_recorrido:
+
+            ; obtengo numero a numero del vector en binario
+            GET_NUMBER_VECTOR vector_binario,numero_vector_binario
+
+            
+
+
+
+
+
 
         jmp menu
 
