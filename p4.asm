@@ -212,6 +212,81 @@ endm
 
 
 
+; ========== macor para imprimir un vector en binario
+PRINT_BINARY_VECTOR macro vector,tamanio_vector
+
+    ; ciclos locales del metodo
+    local for_vector_binario,fin_for_vector_binario
+
+    ; asigno el tamanio del vector a un contador para para el for
+    mov cl,0
+    mov cl,tamanio_vector
+    mov n,cx
+
+    ; -> inicio del ciclo for para recorrer un vector binario
+    for_vector_binario:
+
+            ;-> condidcion de salida del ciclo for 
+            cmp n,0
+            je fin_for_vector_binario            
+            
+            ;-> obtener el numero en binario
+            GET_NUMBER_BINARY vector_binario,numero_en_posicion,variable 
+            
+            ;-> division de la variable para saber su decena y unidad            
+            mov dl,variable
+            mov ax,dx
+            mov cociente_division,10d 
+            cwd
+            div cociente_division             
+           
+            ;-> guardo la decena decena
+            mov decena,al
+                        
+            ;-> guardo la unidad
+            mov unidad,dl           
+                        
+            ;--- si existiera una decena en el numero
+            cmp decena,0
+            jne imprimir_decena
+            
+            ;--- si existiera una unidad en el numero
+            cmp unidad,0
+            jne imprimir_unidad
+                     
+                        
+            ;--- muevo al siguiente posicion del vector
+            inc numero_en_posicion                         
+            ;--- decremento el numero para el ciclo for            
+            dec n                        
+            ;--- repitre el ciclo
+            jmp for_vector_binario
+            
+                
+        ;-> salia del ciclo for
+        fin_for_vector_binario:
+            PAUSA_PANTALLA ;-> pusa de pantalla para visualizar los numeros
+            jmp menu  
+                   
+            
+        ;--- imprimir unidad si exite 
+        imprimir_decena:
+            PRINT_NUM decena  
+            
+        
+        ;--- imprimir decena si exite
+        imprimir_unidad:
+            PRINT_NUM unidad 
+            inc numero_en_posicion
+            dec n 
+            PRINT_CARACTER '-'
+            jmp for_vector_binario
+
+endm
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
+  
+
+
 ; ========== 
 
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
@@ -646,87 +721,8 @@ endm
 
         PRINT salto_linea
 
-        ;------ for para recorre el vector binario
-        mov cl,0
-        mov cl,cantidad_numeros_vector_binario
-        mov n,cx
-        
-
-        
-        for_vector_binario:
-            
-            cmp n,0
-            je fin_for_vector_binario 
-            
-            
-            
-            ;-- obtener el numero en binario
-            GET_NUMBER_BINARY vector_binario,numero_en_posicion,variable 
-            
-            
-            
-            mov dl,variable
-            mov ax,dx
-            mov cociente_division,10d 
-            cwd
-            div cociente_division
-             
-           
-            ; db decena
-            mov decena,al
-            
-            
-            ; unidad
-            mov unidad,dl             
-            
-            
-            ;--- si existiera una decena en el numero
-            cmp decena,0
-            jne imprimir_decena
-
-            
-            ;--- si existiera una unidad en el numero
-            cmp unidad,0
-            jne imprimir_unidad
-                       
-            
-            
-            ;--- muevo al siguiente posicion del vector
-            inc numero_en_posicion 
-            
-            
-            ;--- decremento el numero para el ciclo for            
-            dec n
-            
-            
-            ;--- repitre el ciclo
-            jmp for_vector_binario
-            
-        
-        
-        ;--- sale del ciclo for
-        fin_for_vector_binario:
-            PAUSA_PANTALLA
-            jmp menu  
-            
-            
-            
-        ;--- imprimir unidad si exite 
-        imprimir_decena:
-            PRINT_NUM decena  
-            
-        
-        
-        ;--- imprimir decena si exite
-        imprimir_unidad:
-            PRINT_NUM unidad 
-            inc numero_en_posicion
-            dec n 
-            PRINT_CARACTER '-'
-            jmp for_vector_binario
-
-
-
+        ;-> impresion del vector binario
+        PRINT_BINARY_VECTOR vector_binario,cantidad_numeros_vector_binario
 
 
 
