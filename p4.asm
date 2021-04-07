@@ -169,7 +169,7 @@ endm
 
 ; ========== macro para guardar numero dentro de un vector  
 INSERT_VECTOR macro vector,posicion,caracter   
-    and bx,0          ; borrador lo que tenga bx para usarlo
+    mov bx,0          ; borrador lo que tenga bx para usarlo
     mov bl,posicion
     mov si,bx         ; contador se mueve a si
     mov bl,caracter   ; muevo el caracter
@@ -180,8 +180,8 @@ endm
 
 
 ; ========== macro para guardar numero dentro de un vector  
-GET_NUMBER_VECTOR macro vector,posicion   
-    and bx,0          ; borrador lo que tenga bx para usarlo
+GET_NUMBER_VECTOR macro vector,posicion
+    mov bx,0          ; borrador lo que tenga bx para usarlo
     mov bl,posicion
     mov si,bx         ; contador se mueve a si
     mov bl,vector[si] ; obtiene el caracter del vector en posicion si y guarda en bl
@@ -191,14 +191,28 @@ endm
 
 
 ; ========== obtener el numero binario del vector
-GET_NUMBER_BINARY macro vector,posicion,variable
-    and bx,0          ; borrador lo que tenga bx para usarlo
+GET_NUMBER_BINARY macro vector,posicion,variable  
+    mov bx,0          ; borrador lo que tenga bx para usarlo
     mov bl,posicion
     mov si,bx         ; contador se mueve a si
     mov bl,vector[si] ; obtiene el caracter del vector en posicion si y guarda en bl
     mov variable,bl
 endm
-; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+; ========== insertar en un vector binario
+SET_VECTOR_BINARY macro vector,posicion,variable
+    ;mov si,0  
+    mov bx,0          ; borrador lo que tenga bx para usarlo
+    mov bl,posicion
+    mov si,bx         ; contador se mueve a si
+    mov bl,variable
+    mov vector[si],bl   
+    
+endm
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - 
+ 
 
 
 ; ========== macro para imprimir el vector binario
@@ -216,10 +230,18 @@ endm
 PRINT_BINARY_VECTOR macro vector,tamanio_vector
 
     ; ciclos locales del metodo
-    local for_vector_binario,fin_for_vector_binario
+    local for_vector_binario,fin_for_vector_binario,imprimir_decena,imprimir_unidad
 
-    ; asigno el tamanio del vector a un contador para para el for
-    mov cl,0
+    ; variables para hacer la division
+    mov unidad,0d
+    mov decena,0d
+
+    ; asigno el tamanio del vector a un contador para para el for 
+    mov numero_en_posicion,0d
+    mov variable,0d
+    mov cx,0    
+    mov ax,0
+    mov dx,0
     mov cl,tamanio_vector
     mov n,cx
 
@@ -231,20 +253,24 @@ PRINT_BINARY_VECTOR macro vector,tamanio_vector
             je fin_for_vector_binario            
             
             ;-> obtener el numero en binario
-            GET_NUMBER_BINARY vector_binario,numero_en_posicion,variable 
+            GET_NUMBER_BINARY vector,numero_en_posicion,variable 
+            
             
             ;-> division de la variable para saber su decena y unidad            
             mov dl,variable
             mov ax,dx
             mov cociente_division,10d 
             cwd
-            div cociente_division             
+            div cociente_division
+                         
            
             ;-> guardo la decena decena
-            mov decena,al
+            mov decena,al      
+            
                         
             ;-> guardo la unidad
-            mov unidad,dl           
+            mov unidad,dl   
+                    
                         
             ;--- si existiera una decena en el numero
             cmp decena,0
@@ -263,12 +289,7 @@ PRINT_BINARY_VECTOR macro vector,tamanio_vector
             jmp for_vector_binario
             
                 
-        ;-> salia del ciclo for
-        fin_for_vector_binario:
-            PAUSA_PANTALLA ;-> pusa de pantalla para visualizar los numeros
-            jmp menu  
-                   
-            
+         
         ;--- imprimir unidad si exite 
         imprimir_decena:
             PRINT_NUM decena  
@@ -280,11 +301,64 @@ PRINT_BINARY_VECTOR macro vector,tamanio_vector
             inc numero_en_posicion
             dec n 
             PRINT_CARACTER '-'
-            jmp for_vector_binario
+            jmp for_vector_binario 
+            
+            
+        ;-> salia del ciclo for
+        fin_for_vector_binario:
+            PAUSA_PANTALLA ;-> pusa de pantalla para visualizar los numeros
+            ;jmp menu
 
 endm
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
   
+
+
+; ========== macro para hacer una copi de un vector 
+COPY_PASTE_VECTOR macro vector_fuente,vector_destino,tamanio_vector,size_copia
+
+    ;-- etiquetas locales de la macro
+    local for,fin_for
+
+    ;--- variables utilizadas en el ciclo
+    mov inicio_for_copia,0d ;variable para el for
+    mov numero_a_copiar,0d  ;
+    mov variable_copia,0d   ;variable para copiar el numero
+
+    mov bx,0
+    mov bl,tamanio_vector
+    mov si,0d
+
+    ;-> incio del ciclo for
+    for:
+        ;-> condicion de salida del ciclo for (mayor o igual)
+        cmp inicio_for_copia,bl
+        jge fin_for 
+
+        ;-> obtener el numero en cierta poscion del vector original
+        GET_NUMBER_BINARY vector_fuente,inicio_for_copia,variable_copia
+
+        ;->depositar el numero en el vector destino (copia)
+        SET_VECTOR_BINARY vector_destino,inicio_for_copia,variable_copia
+
+        ;-> incremento en el for
+        inc inicio_for_copia 
+
+        ;-> incremeo el tamanio del vector copia
+        inc size_copia
+
+        ;-> para comprara con bl en el for por si se pierde el dato en bl
+        mov bl,tamanio_vector
+
+        ;-> regreos a la etiqueta for
+        jmp for
+
+    ;-> termina el cilo for
+    fin_for:
+
+
+endm 
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
 
 
 ; ========== 
@@ -389,6 +463,11 @@ endm
 
     ;----------- utilidades para el ordenamiento burbuja
     copia_vector_binario db 80 dup('$')
+    inicio_for_copia db 0
+    numero_a_copiar db 0
+    variable_copia db 0
+    size_copia db 0
+    msg_copia db 'copia del vector',10,13,'$'
   
 
 
@@ -734,6 +813,27 @@ endm
 
         ;-> impresion del vector binario
         PRINT_BINARY_VECTOR vector_binario,cantidad_numeros_vector_binario
+
+        ;-> prueba para hcer una copia del vector
+        PRINT salto_linea
+        PRINT msg_copia 
+        PAUSA_PANTALLA
+        
+
+        ;->realizacion de la copia del vector
+        ;COPY_PASTE_VECTOR vector_binario,copia_vector_binario,cantidad_numeros_vector_binario
+             
+        PAUSA_PANTALLA     
+             
+        ; realizacion de una copia de un vector fuenta a otro vector destino
+        COPY_PASTE_VECTOR vector_binario,copia_vector_binario,cantidad_numeros_vector_binario,size_copia  
+         
+         
+        ; impresion de la copia del vector 
+        PRINT_BINARY_VECTOR copia_vector_binario,size_copia
+
+        ;->regreso al menu
+        jmp menu 
 
 
 
