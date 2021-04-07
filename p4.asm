@@ -385,7 +385,10 @@ endm
     residuo_division dw 0
     unidad db 0
     decena db 0
-  
+
+
+    ;----------- utilidades para el ordenamiento burbuja
+    copia_vector_binario db 80 dup('$')
   
 
 
@@ -672,12 +675,16 @@ endm
             
             
             ;--- reinicio de variable
+            ;-> posicion en el vector binario que se va insertar
             inc posicion_vector_binario 
 
+            ;-> reinicio del contador de cuantos push se hicieron a la pils
             mov contador_numeros_push,0
-             
+
+            ;-> posicion del vector de donde se esta leendo
             inc posicion_vector_numeros2
 
+            ;-> size del vector binario donde se almacenan los numeros
             inc cantidad_numeros_vector_binario
              
             ; regreso al ciclo para ver el siguiente numero 
@@ -696,12 +703,16 @@ endm
             mov vector_binario[si],al
 
             ;--- reinicio de variable
+            ;-> posicion en el vector binario que se va insertar
             inc posicion_vector_binario 
 
+            ;-> reinicio del contador de cuantos push se hicieron a la pils
             mov contador_numeros_push,0
-             
+
+            ;-> posicion del vector de donde se esta leendo
             inc posicion_vector_numeros2
 
+            ;-> size del vector binario donde se almacenan los numeros
             inc cantidad_numeros_vector_binario
             
             ; regreso al ciclo para ver el siguiente numero 
