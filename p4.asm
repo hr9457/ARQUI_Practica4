@@ -361,6 +361,106 @@ endm
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
 
 
+; ========== Ordenamiento burbuja para un vector
+ORDENAMIENTO_BURBUJA macro vector,size_vector
+
+    local for_burbuja,intercambio,fin_burbuja_j,fin_burbuja
+
+    ;-------------- limpieza y copia de variables
+    mov i,0d
+    mov j,0d
+    mov temporal,0d
+    mov valor_en_posicion_j,0d   
+    mov valor_en_posicion_j_masUno,0d
+    mov volor_en_posicion_i, 0d 
+    mov siguiente_j,1d
+
+    mov ax,0
+    mov al,size_vector 
+    mov size_copia2,al
+    dec size_copia2
+    mov cx,0
+    mov dx,0 
+    mov bx,0
+    mov ax,0
+    mov cl,size_vector
+    mov dl,size_copia2
+
+
+    for_burbuja:
+            
+            ;-- condicion de salida
+            ;-- salta si i es mayor a dx
+            cmp i,cl
+            jnle fin_burbuja              
+            
+            ;---- for interno
+            for_burbuja_j:
+                
+                ;---- condicion de salida  
+                cmp j,dl
+                jnle fin_burbuja_j
+                
+                
+                ;--- if vector[j] > vector[j+1] 
+                GET_NUMBER_BINARY copia_vector_binario,j,valor_en_posicion_j
+                GET_NUMBER_BINARY copia_vector_binario,siguiente_j,valor_en_posicion_j_masUno 
+                
+                
+                mov al,valor_en_posicion_j
+                mov bl,valor_en_posicion_j_masUno
+                
+                ;--- si el numero vector[j] > a vector[j+1]
+                cmp valor_en_posicion_j,bl
+                jg  intercambio  
+                
+                
+                ;--- regresa 
+                inc j
+                inc siguiente_j
+                jmp for_burbuja_j
+                
+                
+                ;-- intercambio de posiciones
+                intercambio:
+                    
+                    ;--- temporal = vector[j]
+                    GET_NUMBER_BINARY copia_vector_binario,j,temporal
+                    
+                    ;--- vector[j] = vector[j+1] 
+                    SET_VECTOR_BINARY copia_vector_binario,j,valor_en_posicion_j_masUno
+                    
+                    
+                    ;--- vector[j+1] = temporal 
+                    SET_VECTOR_BINARY copia_vector_binario,siguiente_j,temporal
+                
+                    
+                    ;--- regresa 
+                    inc j ;j++
+                    inc siguiente_j ;j+1 ++
+                    jmp for_burbuja_j               
+                
+                
+                
+            fin_burbuja_j:
+                inc i ;i++
+                mov j,0d 
+                mov siguiente_j,1d
+                mov temporal,0
+                mov valor_en_posicion_j_masUno,0
+                mov valor_en_posicion_j,0   
+                jmp for_burbuja        
+        
+            
+            
+        ;-> fin del ciclo burbuja   
+        fin_burbuja:     
+
+endm
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
+
+
+
 ; ========== 
 
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
@@ -852,88 +952,7 @@ endm
         
         
         ;--------------
-        mov ax,0
-        mov al,size_copia 
-        mov size_copia2,al
-        dec size_copia2
-        mov cx,0
-        mov dx,0 
-        mov bx,0
-        mov ax,0
-        mov cl,size_copia
-        mov dl,size_copia2
-        
-        for_burbuja:
-            
-            ;-- condicion de salida
-            ;-- salta si i es mayor a dx
-            cmp i,cl
-            jnle fin_burbuja  
-            
-            
-            ;---- for interno
-            for_burbuja_j:
-                
-                ;---- condicion de salida  
-                cmp j,dl
-                jnle fin_burbuja_j
-                
-                
-                ;--- if vector[j] > vector[j+1] 
-                GET_NUMBER_BINARY copia_vector_binario,j,valor_en_posicion_j
-                GET_NUMBER_BINARY copia_vector_binario,siguiente_j,valor_en_posicion_j_masUno 
-                
-                
-                mov al,valor_en_posicion_j
-                mov bl,valor_en_posicion_j_masUno
-                
-                ;--- si el numero vector[j] > a vector[j+1]
-                cmp valor_en_posicion_j,bl
-                jg  intercambio  
-                
-                
-                ;--- regresa 
-                inc j
-                inc siguiente_j
-                jmp for_burbuja_j
-                
-                
-                ;-- intercambio de posiciones
-                intercambio:
-                    
-                    ;--- temporal = vector[j]
-                    GET_NUMBER_BINARY copia_vector_binario,j,temporal
-                    
-                    ;--- vector[j] = vector[j+1] 
-                    SET_VECTOR_BINARY copia_vector_binario,j,valor_en_posicion_j_masUno
-                    
-                    
-                    ;--- vector[j+1] = temporal 
-                    SET_VECTOR_BINARY copia_vector_binario,siguiente_j,temporal
-                
-                    
-                    ;--- regresa 
-                    inc j ;j++
-                    inc siguiente_j ;j+1 ++
-                    jmp for_burbuja_j
-                
-                
-                
-                
-            fin_burbuja_j:
-                inc i ;i++
-                mov j,0d 
-                mov siguiente_j,1d
-                mov temporal,0
-                mov valor_en_posicion_j_masUno,0
-                mov valor_en_posicion_j,0   
-                jmp for_burbuja            
-        
-            
-            
-            
-        fin_burbuja:  
-        
+        ORDENAMIENTO_BURBUJA copia_vector,size_copia
           
           
         ;-----------------------------------
