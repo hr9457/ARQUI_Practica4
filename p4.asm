@@ -563,6 +563,77 @@ endm
 
 
 
+; ========== macro para escribir en archivo de reporte
+WRITE_IN_FILE macro cadena,tamanio_cadena
+
+    mov ah,40h
+    mov bx,handler2
+    mov cx,tamanio_cadena
+    mov dx,0
+    mov dx,offset cadena 
+    int 21h 
+
+endm 
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+
+; ========== macro para convertir un numero binario a ASCII
+NUMBER_BINARY_ASCII macro numero,contador
+
+    local DOWHILE,ESCRIBIR_ASCII,FIN_ESCRIBIR_ASCII
+
+    ;-> limpieza 
+    mov contador,0d
+    mov dx,0d
+    mov ax,0d
+
+    DOWHILE:
+        
+        mov al,numero 
+        mov cx,10d
+        div cx
+
+        ;-> empuje a la pila y aumento numeros en pila
+        push dx
+        inc contador
+
+        ;-> comparamos el resultado del cociente
+        cmp ax,0
+        jnle DOWHILE
+
+
+    ;-> sacado de la pila 
+    mov ax,0
+
+    ESCRIBIR_ASCII:
+
+        ;-> condicion de salida
+        ;-> salta si el contador es igual a 0
+        cmp contador,0
+        je FIN_ESCRIBIR_ASCII
+
+
+        pop dx
+        mov numero_en_pila,dl 
+        add numero_en_pila,30h
+        dec contador
+
+        ;-> se escribe en el archivo
+        WRITE_IN_FILE numero_en_pila,1d
+
+        ;-> repite el ciclo 
+        jmp ESCRIBIR_ASCII
+
+
+    FIN_ESCRIBIR_ASCII:
+
+
+
+endm
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -
+
+
 ; ========== 
 
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
@@ -686,16 +757,60 @@ endm
     siguiente_j db 1
 
 
-    ;------------ utilidades para crear un archivo para el reporte
-    ; path_reporte db 'C:\reporte',0  
-    ; archivo db 'C:\reporte\reporte.txt'
-    ; cadena_U db '<Universidad>Universidad de San Carlos de Guatemal</Universidad>',0
-    ; handler2 dw ?                                                 
     
-    ; msg_error_creacion_archivo db 'Error: No se puede crear el archivo',10,13,'$'
-    ; msg_error_escritura_archivo db 'Error: No se pudo escribir en el archivo',10,13,'$'
-    ; msg_exito_reporte db 'Reporte creado con exito',10,13,'$'  
-    ; numerobytes dw $ - offset cadena_U 
+    ;------------ utilidades para crear un archivo para el reporte 
+    archivo_reporte db 'reporte.txt',0  
+    
+    etiqueta_encabezado db '<Arqui>',10;8
+                        db '<Encabezado',10;12
+                        db '<Universidad>Universidad de San Carlos de Guatemala</Universidad>',10
+                        db '<Facultad>Facultad de Ingenieria</Facultad>',10
+                        db '<Escula>Ciencias y Sistemas</Escuela>',10
+                        db '<Curso>',10
+                        db '<Nombre>Arquitectura de Computadores y Ensambladores 1</Nombre>',10
+                        db '<Seccion>Seccion A</Seccion>',10
+                        db '</Curso>',10
+                        db '<Ciclo>Primer Semestre 2021</Ciclo>',10,'$'
+    
+                      
+    apertura_fecha db '<Fecha>',10,'$';8
+    apertura_dia db '<Dia>','$';5
+    cierre_dia db '</Dia>',10,'$';7
+    apertura_mes db '<Mes>','$';5
+    cierre_mes db '</Mes>',10,'$';7
+    apertura_anio db '<Ano>','$';5 
+    anio_2021 db '2021','$';4
+    cierre_anio db '</Ano>',10,'$';7
+    cierre_fecha db '</Fecha>',10,'$';9    
+    apertura_hora db '<Hora>',10,'$';7    
+    apertura_hora2 db '<Hora>','$';6
+    cierre_hora2 db '</Hora>',10,'$';8
+    apertura_minutos db '<Minutos>','$';9
+    cierre_minutos db '</Minutos>',10,'$';11
+    apertura_segundos db '<Segundos>','$';10
+    cierre_segundos db '</Segundos>',10,'$';12
+    cierre_hora db '</Hora>',10,'$';8
+    
+    etiqueta_alumno db  '<Alumno>',10
+                    db  '<Nombre>Hector Josue Orozco Salazar</Nombre>',10
+                    db  '<Carnet>201314296</Carnet>',10
+                    db  '</Alumno>',10,'$' ;90
+    
+                       
+    dia db 0
+    mes db 0 
+    anio dw 0 
+    division_fecha db 0  
+    resultado_fecha dw 0                
+                       
+    handler2 dw ?                                                 
+    
+    msg_error_creacion_archivo db 'Error: No se puede crear el archivo',10,13,'$'
+    msg_error_escritura_archivo db 'Error: No se pudo escribir en el archivo',10,13,'$'
+    msg_exito_reporte db 'Reporte creado con exito',10,13,'$'
+    
+    contador_pila db 0 
+    numero_en_pila db 0
   
 
 
@@ -1110,62 +1225,86 @@ endm
         PAUSA_PANTALLA
 
 
-        ; mov ax,0 
-        ; mov bx,0
-        ; mov dx,0 
-        ; mov cx,0
-        ; inicio:
-        ;     ;creacion del directorio
-        ;     mov ah,39h
-        ;     mov dx, offset path_reporte 
-        ;     int 21h
+        mov ax,0 
+        mov bx,0
+        mov dx,0 
+        mov cx,0
+        inicio:              
+             ;crear archivo
+             mov ah,3ch
+             mov cx,0
+             mov dx,offset archivo_reporte 
+             int 21h        
             
-        ;     ;crear archivo
-        ;     mov ah,3ch
-        ;     mov cx,0
-        ;     mov dx,offset archivo_reporte 
-        ;     int 21h        
+             ;si hay error en la creacion
+             jc error_creacion_archivo
+             mov handler2, ax
+             
             
-        ;     ;si hay error en la creacion
-        ;     jc error_creacion_archivo
-        ;     mov handler2, ax
+            ; ESCRIBIR EN EL ARCHIVO
+            WRITE_IN_FILE etiqueta_encabezado,314d
+             
+            ;DIA MES ANIO
+             mov ah,2Ah
+             int 21h
+             
+             mov dia,dl
+             mov mes,dh
+             mov anio,cx 
+             
+             
+             WRITE_IN_FILE apertura_fecha,8d
+             
+             ;dia
+             WRITE_IN_FILE apertura_dia,5d             
+             NUMBER_BINARY_ASCII dia,contador_pila                    
+             WRITE_IN_FILE cierre_dia,7d
+             
+             ;mes
+             WRITE_IN_FILE apertura_mes,5d
+             NUMBER_BINARY_ASCII mes,contador_pila
+             WRITE_IN_FILE cierre_mes,7d
+             
+             ;anio
+             WRITE_IN_FILE apertura_anio,5d
+             WRITE_IN_FILE anio_2021,4d
+             WRITE_IN_FILE cierre_anio,7d
+             
+             WRITE_IN_FILE cierre_fecha,9d
+             
+             WRITE_IN_FILE etiqueta_alumno,90d
+             
+             
             
-        ;     ; ESCRIBIR EN EL ARCHIVO 
-        ;     MOV ah,40h
-        ;     mov bx,handler2
-        ;     mov cx,numerobytes  
-        ;     mov dx,0
-        ;     mov dx,offset cadena_U
-        ;     int 21h
             
-        ;     ; si hay error en la escritura, CF=1
-        ;     jc error_escritura_reporte
+             ; si hay error en la escritura, CF=1
+             jc error_escritura_reporte
             
-        ;     jmp fin_creacion_reporte  
+             jmp fin_creacion_reporte  
             
                             
-        ; error_creacion_archivo: 
-        ;     PRINT salto_linea
-        ;     PRINT msg_error_creacion_archivo  
-        ;     PAUSA_PANTALLA    
+         error_creacion_archivo: 
+             PRINT salto_linea
+             PRINT msg_error_creacion_archivo  
+             PAUSA_PANTALLA    
             
             
-        ; error_escritura_reporte:
-        ;     PRINT salto_linea
-        ;     PRINT msg_error_escritura_archivo
-        ;     PAUSA_PANTALLA    
+         error_escritura_reporte:
+             PRINT salto_linea
+             PRINT msg_error_escritura_archivo
+             PAUSA_PANTALLA    
             
             
         
-        ; fin_creacion_reporte:
-        ;     ; cierre del archivo
-        ;     mov ah,3eh
-        ;     mov bx,handler2
-        ;     int 21h
+         fin_creacion_reporte:
+             ; cierre del archivo
+             mov ah,3eh
+             mov bx,handler2
+             int 21h
             
-        ;     PRINT msg_exito_reporte
-        ;     PAUSA_PANTALLA
-        ;     jmp menu
+             PRINT msg_exito_reporte
+             PAUSA_PANTALLA
+             jmp menu
 
 
 

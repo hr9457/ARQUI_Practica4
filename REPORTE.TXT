@@ -1,0 +1,19 @@
+<Arqui>
+<Encabezado
+<Universidad>Universidad de San Carlos de Guatemala</Universidad>
+<Facultad>Facultad de Ingenieria</Facultad>
+<Escula>Ciencias y Sistemas</Escuela>
+<Curso>
+<Nombre>Arquitectura de Computadores y Ensambladores 1</Nombre>
+<Seccion>Seccion A</Seccion>
+</Curso>
+<Ciclo>Primer Semestre 2021</Ciclo>
+<Fecha>
+<Dia>8</Dia>
+<Mes>4</Mes>
+<Ano>2021</Ano>
+</Fecha>
+<Alumno>
+<Nombre>Hector Josue Orozco Salazar</Nombre>
+<Carnet>201314296</Carnet>
+</Alumno>
