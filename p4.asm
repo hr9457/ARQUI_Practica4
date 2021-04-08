@@ -461,6 +461,108 @@ endm
 
 
 
+; ========== ordenamiento burbuja descendente
+ORDENAMIENTO_BURBUJA_DES macro vector,size_vector
+
+    local for_burbuja_des,intercambio_des,fin_burbuja_j_des,fin_burbuja_des
+    
+    mov i,0d
+    mov j,0d
+    mov temporal,0d
+    mov valor_en_posicion_j,0d   
+    mov valor_en_posicion_j_masUno,0d
+    mov volor_en_posicion_i,0d 
+    mov siguiente_j,1d
+    mov size_copia2,0d
+
+    mov ax,0
+    mov al,size_vector
+    mov size_copia2,al
+    dec size_copia2
+    mov cx,0
+    mov dx,0 
+    mov bx,0
+    mov ax,0
+    mov cl,size_vector
+    mov dl,size_copia2
+
+
+    for_burbuja_des:
+            
+            ;-- condicion de salida
+            ;-- salta si i es mayor a dx
+            cmp i,cl
+            jnle fin_burbuja_des
+                          
+            
+            ;---- for interno
+            for_burbuja_j_des:
+                
+                ;---- condicion de salida  
+                cmp j,dl
+                jnle fin_burbuja_j_des
+                
+                
+                ;--- if vector[j] > vector[j+1] 
+                GET_NUMBER_BINARY vector,j,valor_en_posicion_j
+                GET_NUMBER_BINARY vector,siguiente_j,valor_en_posicion_j_masUno 
+                
+                
+                mov al,valor_en_posicion_j
+                mov bl,valor_en_posicion_j_masUno
+                
+                ;--- si el numero vector[j] < a vector[j+1]
+                cmp valor_en_posicion_j,bl
+                jng  intercambio_des 
+                
+                
+                ;--- regresa 
+                inc j
+                inc siguiente_j
+                jmp for_burbuja_j_des
+                
+                
+                ;-- intercambio de posiciones
+                intercambio_des:
+                    
+                    ;--- temporal = vector[j]
+                    GET_NUMBER_BINARY vector,j,temporal
+                    
+                    ;--- vector[j] = vector[j+1] 
+                    SET_VECTOR_BINARY vector,j,valor_en_posicion_j_masUno
+                    
+                    
+                    ;--- vector[j+1] = temporal 
+                    SET_VECTOR_BINARY vector,siguiente_j,temporal
+                
+                    
+                    ;--- regresa 
+                    inc j ;j++
+                    inc siguiente_j ;j+1 ++
+                    jmp for_burbuja_j_des               
+                
+                
+                
+            fin_burbuja_j_des:
+                inc i ;i++
+                mov j,0d 
+                mov siguiente_j,1d
+                mov temporal,0
+                mov valor_en_posicion_j_masUno,0
+                mov valor_en_posicion_j,0   
+                jmp for_burbuja_des        
+        
+            
+            
+        ;-> fin del ciclo burbuja   
+        fin_burbuja_des: 
+         
+
+endm
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+
 ; ========== 
 
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
@@ -563,12 +665,15 @@ endm
 
     ;----------- utilidades para el ordenamiento burbuja
     copia_vector_binario db 80 dup('$')
+    copia_vector_burbuja_descendente db 80 dup('$')
+    size_copia_burbuja_des db 0
     inicio_for_copia db 0
     numero_a_copiar db 0
     variable_copia db 0
     size_copia db 0
     msg_copia db 'copia del vector',10,13,'$'
     msg_ordenamiento_burbuja db 'vector por ordenamiento burbuja',10,13,'$'
+    msg_ordenamiento_burbuja_des db 'vector por ordenamiento burbuja descendente',10,13,'$'
     
     
     i db 0
@@ -579,6 +684,18 @@ endm
     valor_en_posicion_j_masUno db 0
     volor_en_posicion_i db 0 
     siguiente_j db 1
+
+
+    ;------------ utilidades para crear un archivo para el reporte
+    ; path_reporte db 'C:\reporte',0  
+    ; archivo db 'C:\reporte\reporte.txt'
+    ; cadena_U db '<Universidad>Universidad de San Carlos de Guatemal</Universidad>',0
+    ; handler2 dw ?                                                 
+    
+    ; msg_error_creacion_archivo db 'Error: No se puede crear el archivo',10,13,'$'
+    ; msg_error_escritura_archivo db 'Error: No se pudo escribir en el archivo',10,13,'$'
+    ; msg_exito_reporte db 'Reporte creado con exito',10,13,'$'  
+    ; numerobytes dw $ - offset cadena_U 
   
 
 
@@ -935,30 +1052,52 @@ endm
         ;COPY_PASTE_VECTOR vector_binario,copia_vector_binario,cantidad_numeros_vector_binario
              
         PAUSA_PANTALLA     
+
              
         ; realizacion de una copia de un vector fuenta a otro vector destino
+        ; realizacion de una copia para el ordenamiento burbuja ascendente
         COPY_PASTE_VECTOR vector_binario,copia_vector_binario,cantidad_numeros_vector_binario,size_copia  
+
+
+        ; realizacion de una copia para el ordentamient burbuja descendente
+        COPY_PASTE_VECTOR vector_binario,copia_vector_burbuja_descendente,cantidad_numeros_vector_binario,size_copia_burbuja_des
          
          
-        ; impresion de la copia del vector 
+        ; impresion de la copia del vector que se va ordenar
         PRINT_BINARY_VECTOR copia_vector_binario,size_copia
 
 
-        
         ;->ordenamiento burbuja
         PRINT salto_linea 
         PRINT msg_ordenamiento_burbuja  
         PRINT salto_linea
         
         
-        ;--------------
+        ;-------------- metodo para usar el metodo burbuja sobre un vector
         ORDENAMIENTO_BURBUJA copia_vector,size_copia
           
           
         ;-----------------------------------
-        ; impresion de la copia del vector 
+        ; impresion de la copia del vector  despues del ordenamiento burbuja ascendente
         PRINT_BINARY_VECTOR copia_vector_binario,size_copia
         PAUSA_PANTALLA
+
+
+        ;-------------- titulo para ordenamiento descendente
+        PRINT salto_linea 
+        PRINT msg_ordenamiento_burbuja_des  
+        PRINT salto_linea   
+                            
+                            
+        
+        ;-------------- aplicacion del ordenamiento burbuja descendente
+        ORDENAMIENTO_BURBUJA_DES copia_vector_burbuja_descendente,size_copia_burbuja_des 
+        
+                      
+        ; impresion del ordenamient bubuja descendente
+        PRINT_BINARY_VECTOR copia_vector_burbuja_descendente,size_copia_burbuja_des
+        
+
 
         ;->regreso al menu
         jmp menu 
@@ -970,7 +1109,63 @@ endm
         PRINT txt_reporte
         PAUSA_PANTALLA
 
-        jmp menu
+
+        ; mov ax,0 
+        ; mov bx,0
+        ; mov dx,0 
+        ; mov cx,0
+        ; inicio:
+        ;     ;creacion del directorio
+        ;     mov ah,39h
+        ;     mov dx, offset path_reporte 
+        ;     int 21h
+            
+        ;     ;crear archivo
+        ;     mov ah,3ch
+        ;     mov cx,0
+        ;     mov dx,offset archivo_reporte 
+        ;     int 21h        
+            
+        ;     ;si hay error en la creacion
+        ;     jc error_creacion_archivo
+        ;     mov handler2, ax
+            
+        ;     ; ESCRIBIR EN EL ARCHIVO 
+        ;     MOV ah,40h
+        ;     mov bx,handler2
+        ;     mov cx,numerobytes  
+        ;     mov dx,0
+        ;     mov dx,offset cadena_U
+        ;     int 21h
+            
+        ;     ; si hay error en la escritura, CF=1
+        ;     jc error_escritura_reporte
+            
+        ;     jmp fin_creacion_reporte  
+            
+                            
+        ; error_creacion_archivo: 
+        ;     PRINT salto_linea
+        ;     PRINT msg_error_creacion_archivo  
+        ;     PAUSA_PANTALLA    
+            
+            
+        ; error_escritura_reporte:
+        ;     PRINT salto_linea
+        ;     PRINT msg_error_escritura_archivo
+        ;     PAUSA_PANTALLA    
+            
+            
+        
+        ; fin_creacion_reporte:
+        ;     ; cierre del archivo
+        ;     mov ah,3eh
+        ;     mov bx,handler2
+        ;     int 21h
+            
+        ;     PRINT msg_exito_reporte
+        ;     PAUSA_PANTALLA
+        ;     jmp menu
 
 
 
