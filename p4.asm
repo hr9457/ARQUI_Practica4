@@ -588,9 +588,11 @@ NUMBER_BINARY_ASCII macro numero,contador
     mov dx,0d
     mov ax,0d
 
+    mov al,numero 
+
     DOWHILE:
         
-        mov al,numero 
+        mov dx,0d
         mov cx,10d
         div cx
 
@@ -759,7 +761,7 @@ endm
 
     
     ;------------ utilidades para crear un archivo para el reporte 
-    archivo_reporte db 'reporte.txt',0  
+    archivo_reporte db 'reporte.xml',0  
     
     etiqueta_encabezado db '<Arqui>',10;8
                         db '<Encabezado',10;12
@@ -801,7 +803,11 @@ endm
     mes db 0 
     anio dw 0 
     division_fecha db 0  
-    resultado_fecha dw 0                
+    resultado_fecha dw 0  
+
+    hora db 0
+    minutos db 0
+    segundos db 0               
                        
     handler2 dw ?                                                 
     
@@ -1271,6 +1277,32 @@ endm
              WRITE_IN_FILE cierre_anio,7d
              
              WRITE_IN_FILE cierre_fecha,9d
+
+
+            ;-- hora       
+             mov ah,2CH
+             int 21h
+             
+             mov hora,ch
+             mov minutos,cl
+             mov segundos,dh
+             
+             
+             
+             WRITE_IN_FILE apertura_hora,7d
+             ;hora
+             WRITE_IN_FILE apertura_hora2,6d
+             NUMBER_BINARY_ASCII hora,contador_pila
+             WRITE_IN_FILE cierre_hora2,8d 
+             ;minutos
+             WRITE_IN_FILE apertura_minutos,9d 
+             NUMBER_BINARY_ASCII minutos,contador_pila
+             WRITE_IN_FILE cierre_minutos,11d
+             ;SEGUNDOS
+             WRITE_IN_FILE apertura_segundos,10d
+             NUMBER_BINARY_ASCII segundos,contador_pila
+             WRITE_IN_FILE cierre_segundos,12d
+
              
              WRITE_IN_FILE etiqueta_alumno,90d
              
