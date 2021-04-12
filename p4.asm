@@ -1,4 +1,4 @@
-                                        ; ----------- macro para limpiar la pantalla 
+; ----------- macro para limpiar la pantalla 
 LIMPIAR_PANTALLA macro
 	mov ah,00h
 	mov al,03h
@@ -636,6 +636,133 @@ endm
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+; ========== macro para pintar un pixel
+pintar_pixel macro i,j,color
+
+    push ax
+    push bx
+    push di 
+    mov ax,0
+    mov bx,0
+    mov di,0
+    mov ax,320d
+    mov bx,i
+    mul bx
+    add ax,j
+    mov di,ax
+    mov [di],color
+    pop di
+    pop bx
+    pop ax
+
+endm
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+; ========== macro para pintar el marco
+pintar_marco macro izquierda,derecha,arriba,abajo,color
+
+    local ciclo1,ciclo2
+
+    push si
+    
+    mov si,0
+    mov si,izquierda
+    ciclo1:
+
+        pintar_pixel arriba,si,color
+        pintar_pixel abajo,si,color        
+        inc si
+        cmp si,derecha
+        jne ciclo1
+
+    mov si,0
+    mov si,arriba
+    ciclo2:
+        pintar_pixel si,derecha,color
+        pintar_pixel si,izquierda,color
+        inc si 
+        cmp si,abajo
+        jne ciclo2
+    
+    pop si
+
+endm 
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+
+; ========== macro para ir a la datos
+MOV_DATA macro  
+    push ax
+    mov ax,@data
+    mov ds,ax
+    pop ax
+endm 
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+; ========== macro para ir al modo de video
+MOV_VIDEO macro  
+    push ax
+    mov ax,0A000h
+    mov ds,ax
+    pop ax 
+endm 
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
+
+
+; ========== 
+video macro
+    mov ax,0013h
+    int 10h
+    mov ax,0A000h
+    mov ds,ax
+endm 
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
+
+
+
+; ========== 
+fin_video macro
+    mov ax,0003h
+    int 10h
+    mov ax,@data
+    mov ds,ax
+endm 
+; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
+  
+
+POSICION_TEXTO macro posX,posY
+    mov ax,0
+    mov ah,02h
+    mov bh,00h
+    mov dh,posX ;23 filas
+    mov dl,posY ;118col
+    int 10h
+endm 
+
+delay macro parametro
+    push ax
+    push bx
+    mov ax,0
+    mov bx,0
+    mov ax,parametro
+    ret2:
+        dec ax
+        jz finRet
+        mov bx,parametro
+        ret1:
+            dec bx
+        jnz ret1
+    jmp ret2
+    finRet:
+    pop bx
+    pop ax 
+endm 
+
 ; ========== 
 
 ; - - - - - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - -  
@@ -668,6 +795,7 @@ endm
                 db  '*   2. Ordenar           *',10,13
                 db  '*   3. Generar Reporte   *',10,13
                 db  '*   4. Salir             *',10,13
+                db  '*   5. Video             *',10,13
                 db  '**************************',10,13,'$'
 
 
@@ -817,6 +945,15 @@ endm
     
     contador_pila db 0 
     numero_en_pila db 0
+
+
+
+    ;---------------- utilidades para dibujar
+    num db '22','$'
+    titulo db 'USAC','$'
+    ordenamiento db 'Burbuja','$'
+    time db 'Tiempo: 00:00','$'
+    velocidad db 'Velocidad: 5','$'
   
 
 
@@ -852,6 +989,9 @@ endm
 
         cmp al,52
         je op_salir
+
+        cmp al,53
+        je dibujo
 
         jmp menu
 
@@ -1339,6 +1479,66 @@ endm
              jmp menu
 
 
+
+
+    ; ================ op para dibujar algo
+    dibujo:
+
+        video
+
+        ;posicion del numero
+        POSICION_TEXTO 0d,0d
+
+        ;obtengo el valor de la variables
+        MOV_DATA
+
+        PRINT ordenamiento
+
+        
+        ;posicion del numero
+        POSICION_TEXTO 0d,9d
+
+        PRINT time 
+
+        ;posicion del numero
+        POSICION_TEXTO 0d,23d
+
+        PRINT velocidad  
+
+        ;modo video
+        MOV_VIDEO
+
+
+        ;izq, der, arr, abj, color
+        ;pintado del marco
+        pintar_marco 0d,319d,13d,199d,10d
+
+
+
+        ;PINTAR_BARRA 155d,100d 
+        
+
+        ;posicion del numero
+        ; posicon hasta abjo del marco
+        POSICION_TEXTO 23d,58d
+
+        ;obtengo el valor de la variables
+        MOV_DATA
+
+        ; imprime 
+        PRINT num 
+
+        ; regro al modo video 
+        MOV_VIDEO
+
+        ; espera 
+        delay 4000
+
+        ; fin del modo vido al modo normal
+        fin_video
+
+
+        jmp menu 
 
 
 
